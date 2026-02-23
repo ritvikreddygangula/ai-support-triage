@@ -13,10 +13,11 @@ export default function TicketDetail() {
 
   function fetchTicket() {
     return fetch(`${API_BASE}/tickets/${id}`)
-      .then((res) => {
+      .then(async (res) => {
         if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
           if (res.status === 404) throw new Error('Ticket not found');
-          throw new Error('Failed to fetch ticket');
+          throw new Error(data.error || 'Failed to fetch ticket');
         }
         return res.json();
       })

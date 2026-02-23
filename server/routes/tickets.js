@@ -57,26 +57,43 @@ router.get('/', async (req, res) => {
 // GET /api/tickets/:id - get single ticket with latest model run
 router.get('/:id', async (req, res) => {
   try {
-    const ticket = await prisma.ticket.findUnique({
-      where: { id: req.params.id },
-      include: {
-        modelRuns: {
-          orderBy: { createdAt: 'desc' },
-          take: 1,
+    let ticket;
+    try {
+      ticket = await prisma.ticket.findUnique({
+        where: { id: req.params.id },
+        include: {
+          modelRuns: {
+            orderBy: { createdAt: 'desc' },
+            take: 1,
+          },
         },
-      },
-    });
+      });
+    } catch (includeErr) {
+      // ModelRun table may not exist yet if migration not run - fetch without include
+      if (includeErr.code === 'P2021' || includeErr.message?.includes('ModelRun')) {
+        ticket = await prisma.ticket.findUnique({
+          where: { id: req.params.id },
+        });
+        if (ticket) ticket = { ...ticket, modelRuns: [] };
+      } else {
+        throw includeErr;
+      }
+    }
     if (!ticket) {
       return res.status(404).json({ error: 'Ticket not found' });
     }
     const { modelRuns, ...ticketData } = ticket;
     res.json({
       ...ticketData,
-      latestModelRun: modelRuns[0] || null,
+      latestModelRun: modelRuns?.[0] || null,
     });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to fetch ticket' });
+    console.error('Fetch ticket error:', err);
+    const message =
+      process.env.NODE_ENV === 'production'
+        ? 'Failed to fetch ticket'
+        : err.message || 'Failed to fetch ticket';
+    res.status(500).json({ error: message });
   }
 });
 
