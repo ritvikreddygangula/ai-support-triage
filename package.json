@@ -1,0 +1,8 @@
+{
+  "name": "ai-support-ticket-classifier",
+  "private": true,
+  "scripts": {
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev"
+  }
+}
