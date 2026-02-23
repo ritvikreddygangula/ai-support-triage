@@ -35,6 +35,7 @@ Edit `server/.env` and set:
 
 - `DATABASE_URL` – PostgreSQL connection string, e.g.  
   `postgresql://user:password@localhost:5432/ai_support_triage`
+- `OPENAI_API_KEY` – Required for AI classification (Step 2+)
 
 ### 3. Create database and run migrations
 
@@ -78,13 +79,14 @@ npm run dev
 | client | `npm run dev` | Start Vite dev server |
 | client | `npm run build` | Build for production |
 
-## API Routes (Step 1)
+## API Routes
 
 | Method | Path | Description |
 |--------|------|-------------|
 | GET | /api/tickets | List all tickets |
-| GET | /api/tickets/:id | Get single ticket |
+| GET | /api/tickets/:id | Get single ticket (with latest model run) |
 | POST | /api/tickets | Create ticket (body: subject, description, customerEmail?) |
+| POST | /api/tickets/:id/classify | Run AI classification (requires OPENAI_API_KEY) |
 
 ## Project Structure
 

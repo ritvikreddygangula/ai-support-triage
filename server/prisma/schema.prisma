@@ -11,9 +11,23 @@ datasource db {
 }
 
 model Ticket {
-  id             String   @id @default(uuid())
+  id             String     @id @default(uuid())
   subject        String
   description    String
   customerEmail  String?
+  createdAt      DateTime   @default(now())
+  modelRuns      ModelRun[]
+}
+
+model ModelRun {
+  id             String   @id @default(uuid())
+  ticketId       String
+  ticket         Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  modelName      String
+  rawModelText   String
+  parsedJson     Json     // { category, urgency, sentiment, suggestedResponse, rationale }
+  confidence     Float    // 0..1
   createdAt      DateTime @default(now())
+
+  @@index([ticketId])
 }
